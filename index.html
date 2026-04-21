@@ -245,6 +245,7 @@
     margin-left: 4px;
     opacity: 0.5;
   }
+  .inst-name-plain { font-weight: 600; }
 
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -577,11 +578,11 @@ const STORAGE_KEY = 'familyMoneyTracker';
 const THEME_KEY = 'familyMoneyTheme';
 
 const DEFAULT_ACCOUNTS = [
-  { id: 'marcus',   name: 'Marcus',        url: 'https://www.marcus.com/us/en/savings/your-savings/account-detail?accountId=aedf4c18-f9ec-4c4f-a19d-63b0fa72e223' },
-  { id: 'pnc',      name: 'PNC Bank',      url: 'https://secure.pnc.com/web-auth/signin/authenticate?appId=WBA' },
-  { id: 'etrade',   name: 'E*TRADE',       url: 'https://us.etrade.com/etx/hw/v2/accountshome?cnt=header_logon_startin_accounts' },
-  { id: 'robinhood',name: 'Robinhood',     url: 'https://robinhood.com/?classic=1' },
-  { id: 'merrill',  name: 'Merrill Lynch', url: 'https://olui2.fs.ml.com/MDFIProductCenterUI/FIOverview.aspx' },
+  { id: 'marcus',   name: 'Marcus',        url: '' },
+  { id: 'pnc',      name: 'PNC Bank',      url: '' },
+  { id: 'etrade',   name: 'E*TRADE',       url: '' },
+  { id: 'robinhood',name: 'Robinhood',     url: '' },
+  { id: 'merrill',  name: 'Merrill Lynch', url: '' },
 ];
 
 function loadData() {
@@ -678,7 +679,7 @@ function renderBalanceInputs() {
   const rData = (data.rates && data.rates[q]) || {};
   var html = '<div class="col-header">Institution</div><div class="col-header" style="text-align:right">Balance</div><div class="col-header" style="text-align:right">Claimed APY %</div>';
   data.accounts.forEach(function(acc) {
-    html += '<div class="inst-name"><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></div>';
+    html += '<div class="inst-name">' + instLink(acc) + '</div>';
     html += '<input type="number" step="0.01" min="0" placeholder="$0.00" id="input_' + acc.id + '" value="' + (qData[acc.id] != null ? qData[acc.id] : '') + '">';
     html += '<input type="number" step="0.01" min="0" placeholder="e.g. 4.25" id="rate_' + acc.id + '" value="' + (rData[acc.id] != null ? rData[acc.id] : '') + '">';
   });
@@ -861,7 +862,7 @@ function renderAccountTable() {
     const cls = interest >= 0 ? 'positive' : 'negative';
     const sign = interest >= 0 ? '+' : '';
     html += '<tr>' +
-      '<td><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></td>' +
+      '<td>' + instLink(acc) + '</td>' +
       '<td class="num">' + fmt(bal) + '</td>' +
       '<td class="num">' + (prevData ? fmt(pBal) : '\u2014') + '</td>' +
       '<td class="num ' + cls + '">' + (prevData ? sign + fmt(interest) : '\u2014') + '</td>' +
@@ -926,7 +927,7 @@ function renderAccountList() {
   var html = '';
   data.accounts.forEach(function(acc) {
     html += '<div class="account-row">' +
-      '<span style="flex:1;font-weight:600"><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></span>' +
+      '<span style="flex:1;font-weight:600">' + instLink(acc) + '</span>' +
       '<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + acc.url + '</span>' +
       '<button class="btn btn-danger btn-sm" onclick="removeAccount(\'' + acc.id + '\')">Remove</button>' +
     '</div>';
@@ -1035,6 +1036,10 @@ function fmtShort(n) {
   if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
   if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K';
   return '$' + n.toFixed(0);
+}
+function instLink(acc) {
+  if (acc.url) return '<a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a>';
+  return '<span class="inst-name-plain">' + acc.name + '</span>';
 }
 
 // ── Quarter select change ───────────────────────────────────
