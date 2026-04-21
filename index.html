@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Money Tracker</title>
+<style>
+  /* ── Theme variables ──────────────────────────────────── */
+  :root {
+    --bg-gradient: linear-gradient(135deg, #f0f0f3 0%, #e8e8ed 50%, #f0f0f3 100%);
+    --bg-mesh1: radial-gradient(ellipse at 20% 50%, rgba(200,200,210,0.2) 0%, transparent 50%);
+    --bg-mesh2: radial-gradient(ellipse at 80% 20%, rgba(180,180,200,0.15) 0%, transparent 50%);
+    --bg-mesh3: radial-gradient(ellipse at 40% 80%, rgba(190,190,210,0.1) 0%, transparent 50%);
+    --glass-bg: rgba(255,255,255,0.65);
+    --glass-border: rgba(255,255,255,0.8);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,0.06);
+    --glass-hover: rgba(255,255,255,0.8);
+    --blur: 18px;
+    --text: #1a1a2e;
+    --text2: rgba(30,30,60,0.5);
+    --accent: #6366f1;
+    --accent-glow: rgba(99,102,241,0.25);
+    --green: #10b981;
+    --green-glow: rgba(16,185,129,0.2);
+    --red: #ef4444;
+    --red-glow: rgba(239,68,68,0.2);
+    --input-bg: rgba(255,255,255,0.6);
+    --input-border: rgba(0,0,0,0.1);
+    --table-border: rgba(0,0,0,0.06);
+    --card-radius: 16px;
+    --header-text: #1a1a2e;
+    --subtitle-text: rgba(30,30,60,0.5);
+  }
+
+  [data-theme="dark"] {
+    --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    --bg-mesh1: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 50%);
+    --bg-mesh2: radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.12) 0%, transparent 50%);
+    --bg-mesh3: radial-gradient(ellipse at 40% 80%, rgba(59,130,246,0.1) 0%, transparent 50%);
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.1);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    --glass-hover: rgba(255,255,255,0.1);
+    --text: rgba(255,255,255,0.92);
+    --text2: rgba(255,255,255,0.5);
+    --accent: #818cf8;
+    --accent-glow: rgba(129,140,248,0.3);
+    --green: #34d399;
+    --red: #f87171;
+    --input-bg: rgba(255,255,255,0.08);
+    --input-border: rgba(255,255,255,0.15);
+    --table-border: rgba(255,255,255,0.08);
+    --header-text: #fff;
+    --subtitle-text: rgba(255,255,255,0.55);
+  }
+
+  /* ── Base ──────────────────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+    transition: background 0.5s ease;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--bg-mesh1), var(--bg-mesh2), var(--bg-mesh3);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header ───────────────────────────────────────────── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--header-text);
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    color: var(--subtitle-text);
+    font-size: 14px;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* ── Theme toggle ─────────────────────────────────────── */
+  .theme-toggle {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    width: 64px;
+    height: 32px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .theme-toggle:hover { background: var(--glass-hover); }
+  .theme-toggle .toggle-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  [data-theme="dark"] .toggle-thumb { transform: translateX(30px); }
+  .toggle-sun, .toggle-moon { position: absolute; font-size: 13px; transition: opacity 0.3s; }
+  .toggle-sun { left: 10px; opacity: 1; }
+  .toggle-moon { right: 10px; opacity: 0.5; }
+  [data-theme="dark"] .toggle-sun { opacity: 0.5; }
+  [data-theme="dark"] .toggle-moon { opacity: 1; }
+
+  /* ── Glass cards ──────────────────────────────────────── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--glass-shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  }
+  .glass:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(31,38,135,0.2);
+    background: var(--glass-hover);
+  }
+  .glass h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text);
+    opacity: 0.8;
+  }
+
+  /* ── Summary cards ────────────────────────────────────── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--glass-shadow);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(31,38,135,0.25);
+  }
+  .summary-card .label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .summary-card .value {
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  .summary-card .sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+
+  /* ── Tables ───────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--table-border);
+    font-weight: 700;
+  }
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--table-border);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    transition: background 0.2s;
+  }
+  tr:hover td { background: rgba(255,255,255,0.05); }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; }
+  th.num { text-align: right; }
+
+  a.inst-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  a.inst-link:hover { text-decoration: underline; }
+  a.inst-link::after {
+    content: '\u2197';
+    font-size: 10px;
+    margin-left: 4px;
+    opacity: 0.5;
+  }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ── Inputs & Controls ────────────────────────────────── */
+  .quarter-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  select, input[type="number"], input[type="text"] {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    background: var(--input-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  select:focus, input[type="number"]:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: rgba(255,255,255,0.3);
+  }
+  [data-theme="dark"] select:focus,
+  [data-theme="dark"] input[type="number"]:focus,
+  [data-theme="dark"] input[type="text"]:focus {
+    background: rgba(255,255,255,0.12);
+  }
+  input[type="number"] { width: 140px; }
+  select { cursor: pointer; }
+
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn:hover::after { opacity: 1; }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 25px rgba(99,102,241,0.4); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(239,68,68,0.25);
+  }
+  .btn-danger:hover { box-shadow: 0 6px 25px rgba(239,68,68,0.35); transform: translateY(-1px); }
+
+  .btn-sm { padding: 6px 16px; font-size: 12px; border-radius: 10px; }
+
+  /* ── Input grid ───────────────────────────────────────── */
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 160px 130px;
+    gap: 10px 16px;
+    align-items: center;
+  }
+  .input-grid .inst-name { font-weight: 600; }
+  .input-grid .col-header {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    font-weight: 700;
+    padding-bottom: 4px;
+  }
+
+  /* ── Add account form ─────────────────────────────────── */
+  .add-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* ── Account list ─────────────────────────────────────── */
+  .account-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--table-border);
+    transition: background 0.2s;
+  }
+  .account-row:last-child { border-bottom: none; }
+
+  /* ── Chart ─────────────────────────────────────────────── */
+  .chart-container { position: relative; width: 100%; }
+  .chart-container svg { width: 100%; display: block; }
+  .chart-label {
+    font-size: 10px;
+    fill: var(--text2);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  }
+  .chart-line {
+    fill: none;
+    stroke: url(#chartGradientLine);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .chart-area { fill: url(#chartGradientArea); }
+  .chart-dot {
+    fill: var(--accent);
+    stroke: rgba(255,255,255,0.8);
+    stroke-width: 2;
+    transition: r 0.2s;
+  }
+  .chart-dot:hover { r: 6; }
+  .chart-grid { stroke: var(--table-border); stroke-width: 1; }
+  .chart-tooltip {
+    position: absolute;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  /* ── Footer ───────────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    color: var(--subtitle-text);
+    font-size: 12px;
+    margin-top: 16px;
+    padding: 20px 0;
+  }
+  .footer button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .footer button:hover { opacity: 0.7; }
+
+  /* ── Animations ───────────────────────────────────────── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in {
+    animation: fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .delay-1 { animation-delay: 0.05s; }
+  .delay-2 { animation-delay: 0.1s; }
+  .delay-3 { animation-delay: 0.15s; }
+  .delay-4 { animation-delay: 0.2s; }
+  .delay-5 { animation-delay: 0.25s; }
+  .delay-6 { animation-delay: 0.3s; }
+  .delay-7 { animation-delay: 0.35s; }
+  .delay-8 { animation-delay: 0.4s; }
+
+  .save-flash {
+    animation: flashGreen 0.6s ease;
+  }
+  @keyframes flashGreen {
+    0% { box-shadow: 0 0 0 0 var(--green-glow); }
+    50% { box-shadow: 0 0 0 8px var(--green-glow); }
+    100% { box-shadow: var(--glass-shadow); }
+  }
+
+  /* ── Responsive ───────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    body { padding: 16px 12px; }
+    h1 { font-size: 24px; }
+    .summary { grid-template-columns: 1fr; gap: 12px; }
+    .summary-card .value { font-size: 22px; }
+    .glass { padding: 18px; margin-bottom: 16px; }
+    .input-grid {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .input-grid .col-header { display: none; }
+    .input-grid .inst-name {
+      margin-top: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--table-border);
+    }
+    .input-grid input[type="number"] { width: 100%; }
+    .quarter-selector { gap: 8px; }
+    .btn { padding: 12px 20px; min-height: 44px; }
+    .btn-sm { padding: 10px 16px; min-height: 44px; }
+    td { padding: 10px 8px; font-size: 13px; }
+    th { padding: 8px; font-size: 9px; }
+    .table-wrap { margin: 0 -18px; padding: 0 18px; }
+    .add-form { flex-direction: column; }
+    .add-form input[type="text"] { width: 100%; }
+    .account-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header animate-in">
+    <div>
+      <h1>Family Money Tracker</h1>
+      <p class="subtitle">Quarterly savings & interest yield across all accounts</p>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+      <span class="toggle-sun">&#9728;</span>
+      <span class="toggle-moon">&#9790;</span>
+      <div class="toggle-thumb"></div>
+    </button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary" id="summary"></div>
+
+  <!-- Chart -->
+  <div class="glass animate-in delay-5" id="chartSection" style="display:none">
+    <h2>Balance Trend</h2>
+    <div class="chart-container" id="chartContainer"></div>
+  </div>
+
+  <!-- Enter balances -->
+  <div class="glass animate-in delay-6">
+    <h2>Enter Quarterly Balances</h2>
+    <div class="quarter-selector">
+      <select id="qSelect"></select>
+      <button class="btn btn-primary" onclick="saveBalances()">Save Balances</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteQuarter()">Delete Quarter</button>
+    </div>
+    <div class="input-grid" id="balanceInputs"></div>
+  </div>
+
+  <!-- Per-account detail -->
+  <div class="glass animate-in delay-7">
+    <h2>Account Overview</h2>
+    <div class="table-wrap">
+      <table id="accountTable">
+        <thead>
+          <tr>
+            <th>Institution</th>
+            <th class="num">Latest Balance</th>
+            <th class="num">Prev Balance</th>
+            <th class="num">Interest Earned</th>
+            <th class="num">Actual Yield</th>
+            <th class="num">Claimed APY</th>
+          </tr>
+        </thead>
+        <tbody id="accountBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="glass animate-in delay-8">
+    <h2>Quarterly History</h2>
+    <div class="table-wrap">
+      <table id="historyTable"></table>
+    </div>
+  </div>
+
+  <!-- Manage accounts -->
+  <div class="glass animate-in delay-8">
+    <h2>Manage Accounts</h2>
+    <div id="accountList"></div>
+    <div class="add-form">
+      <input type="text" id="newName" placeholder="Institution name">
+      <input type="text" id="newUrl" placeholder="Login URL">
+      <button class="btn btn-primary btn-sm" onclick="addAccount()">+ Add Account</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer animate-in delay-8">
+    Data stored locally in your browser &nbsp;|&nbsp;
+    <button onclick="exportData()">Export JSON</button> &nbsp;|&nbsp;
+    <button onclick="document.getElementById('importFile').click()">Import JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────
+const STORAGE_KEY = 'familyMoneyTracker';
+const THEME_KEY = 'familyMoneyTheme';
+
+const DEFAULT_ACCOUNTS = [
+  { id: 'marcus',   name: 'Marcus',        url: 'https://www.marcus.com/us/en/savings/your-savings/account-detail?accountId=aedf4c18-f9ec-4c4f-a19d-63b0fa72e223' },
+  { id: 'pnc',      name: 'PNC Bank',      url: 'https://secure.pnc.com/web-auth/signin/authenticate?appId=WBA' },
+  { id: 'etrade',   name: 'E*TRADE',       url: 'https://us.etrade.com/etx/hw/v2/accountshome?cnt=header_logon_startin_accounts' },
+  { id: 'robinhood',name: 'Robinhood',     url: 'https://robinhood.com/?classic=1' },
+  { id: 'merrill',  name: 'Merrill Lynch', url: 'https://olui2.fs.ml.com/MDFIProductCenterUI/FIOverview.aspx' },
+];
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    if (!parsed.rates) parsed.rates = {};
+    return parsed;
+  }
+  return { accounts: DEFAULT_ACCOUNTS, quarters: {}, rates: {} };
+}
+
+function saveData(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+}
+
+let data = loadData();
+
+// ── Theme ──────────────────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'dark') document.body.setAttribute('data-theme', 'dark');
+}
+function toggleTheme() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.body.removeAttribute('data-theme');
+    localStorage.setItem(THEME_KEY, 'light');
+  } else {
+    document.body.setAttribute('data-theme', 'dark');
+    localStorage.setItem(THEME_KEY, 'dark');
+  }
+}
+initTheme();
+
+// ── Quarters ────────────────────────────────────────────────
+function quarterLabel(y, q) { return y + ' Q' + q; }
+
+function parseQuarter(label) {
+  const [y, qp] = label.split(' Q');
+  return { year: parseInt(y), quarter: parseInt(qp) };
+}
+
+function nextQuarter(y, q) {
+  return q === 4 ? { year: y + 1, quarter: 1 } : { year: y, quarter: q + 1 };
+}
+
+function getAllQuarterOptions() {
+  const opts = [];
+  let y = 2026, q = 2;
+  while (y < 2031) {
+    opts.push(quarterLabel(y, q));
+    const n = nextQuarter(y, q);
+    y = n.year; q = n.quarter;
+  }
+  return opts;
+}
+
+function getSortedEnteredQuarters() {
+  return Object.keys(data.quarters).sort((a, b) => {
+    const pa = parseQuarter(a), pb = parseQuarter(b);
+    return (pa.year * 10 + pa.quarter) - (pb.year * 10 + pb.quarter);
+  });
+}
+
+// ── Rendering ───────────────────────────────────────────────
+function render() {
+  renderQuarterSelect();
+  renderBalanceInputs();
+  renderSummary();
+  renderChart();
+  renderAccountTable();
+  renderHistory();
+  renderAccountList();
+}
+
+function renderQuarterSelect() {
+  const sel = document.getElementById('qSelect');
+  const current = sel.value;
+  const opts = getAllQuarterOptions();
+  sel.innerHTML = opts.map(function(o) {
+    return '<option value="' + o + '"' + (o === current ? ' selected' : '') + '>' + o + '</option>';
+  }).join('');
+  if (!current) {
+    const entered = getSortedEnteredQuarters();
+    sel.value = entered.length ? entered[entered.length - 1] : quarterLabel(2026, 2);
+  }
+}
+
+function renderBalanceInputs() {
+  const grid = document.getElementById('balanceInputs');
+  const q = document.getElementById('qSelect').value;
+  const qData = data.quarters[q] || {};
+  const rData = (data.rates && data.rates[q]) || {};
+  var html = '<div class="col-header">Institution</div><div class="col-header" style="text-align:right">Balance</div><div class="col-header" style="text-align:right">Claimed APY %</div>';
+  data.accounts.forEach(function(acc) {
+    html += '<div class="inst-name"><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></div>';
+    html += '<input type="number" step="0.01" min="0" placeholder="$0.00" id="input_' + acc.id + '" value="' + (qData[acc.id] != null ? qData[acc.id] : '') + '">';
+    html += '<input type="number" step="0.01" min="0" placeholder="e.g. 4.25" id="rate_' + acc.id + '" value="' + (rData[acc.id] != null ? rData[acc.id] : '') + '">';
+  });
+  grid.innerHTML = html;
+}
+
+function renderSummary() {
+  const quarters = getSortedEnteredQuarters();
+  const container = document.getElementById('summary');
+
+  if (quarters.length === 0) {
+    container.innerHTML = '<div class="summary-card animate-in delay-1"><div class="label">Getting Started</div><div class="sub" style="margin-top:8px">Enter your first quarterly balances to see summary data.</div></div>';
+    return;
+  }
+
+  const latest = quarters[quarters.length - 1];
+  const latestData = data.quarters[latest];
+  const totalNow = data.accounts.reduce(function(s, a) { return s + (latestData[a.id] || 0); }, 0);
+
+  let totalPrev = 0, interestEarned = 0, yieldPct = 0, hasPrev = false;
+
+  if (quarters.length >= 2) {
+    const prev = quarters[quarters.length - 2];
+    const prevData = data.quarters[prev];
+    totalPrev = data.accounts.reduce(function(s, a) { return s + (prevData[a.id] || 0); }, 0);
+    interestEarned = totalNow - totalPrev;
+    yieldPct = totalPrev > 0 ? (interestEarned / totalPrev) * 100 : 0;
+    hasPrev = true;
+  }
+
+  const sign = interestEarned >= 0 ? '+' : '';
+  const cls = interestEarned >= 0 ? 'positive' : 'negative';
+
+  container.innerHTML =
+    '<div class="summary-card animate-in delay-1">' +
+      '<div class="label">Total Balance</div>' +
+      '<div class="value">' + fmt(totalNow) + '</div>' +
+      '<div class="sub">' + latest + '</div>' +
+    '</div>' +
+    '<div class="summary-card animate-in delay-2">' +
+      '<div class="label">Quarterly Change</div>' +
+      '<div class="value ' + cls + '">' + (hasPrev ? sign + fmt(interestEarned) : '\u2014') + '</div>' +
+      '<div class="sub">' + (hasPrev ? 'vs previous quarter' : 'Need 2+ quarters') + '</div>' +
+    '</div>' +
+    '<div class="summary-card animate-in delay-3">' +
+      '<div class="label">Quarterly Yield</div>' +
+      '<div class="value ' + cls + '">' + (hasPrev ? sign + yieldPct.toFixed(2) + '%' : '\u2014') + '</div>' +
+      '<div class="sub">' + (hasPrev ? 'Annualized: ' + sign + (yieldPct * 4).toFixed(2) + '%' : 'Need 2+ quarters') + '</div>' +
+    '</div>' +
+    '<div class="summary-card animate-in delay-4">' +
+      '<div class="label">Accounts</div>' +
+      '<div class="value">' + data.accounts.length + '</div>' +
+      '<div class="sub">' + quarters.length + ' quarter' + (quarters.length > 1 ? 's' : '') + ' recorded</div>' +
+    '</div>';
+}
+
+// ── Chart ───────────────────────────────────────────────────
+function renderChart() {
+  const quarters = getSortedEnteredQuarters();
+  const section = document.getElementById('chartSection');
+  const container = document.getElementById('chartContainer');
+
+  if (quarters.length < 2) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  const totals = quarters.map(function(q) {
+    return data.accounts.reduce(function(s, a) { return s + (data.quarters[q][a.id] || 0); }, 0);
+  });
+
+  const W = 800, H = 250;
+  const pad = { top: 20, right: 20, bottom: 40, left: 70 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const minVal = Math.min.apply(null, totals) * 0.95;
+  const maxVal = Math.max.apply(null, totals) * 1.05;
+  const range = maxVal - minVal || 1;
+
+  function x(i) { return pad.left + (i / (quarters.length - 1)) * cw; }
+  function y(v) { return pad.top + ch - ((v - minVal) / range) * ch; }
+
+  // Build path
+  var linePath = 'M';
+  var areaPath = 'M';
+  quarters.forEach(function(q, i) {
+    var px = x(i), py = y(totals[i]);
+    linePath += (i > 0 ? ' L' : '') + px.toFixed(1) + ',' + py.toFixed(1);
+    areaPath += (i > 0 ? ' L' : '') + px.toFixed(1) + ',' + py.toFixed(1);
+  });
+  areaPath += ' L' + x(quarters.length - 1).toFixed(1) + ',' + (pad.top + ch) + ' L' + x(0).toFixed(1) + ',' + (pad.top + ch) + ' Z';
+
+  // Grid lines (4 lines)
+  var gridHtml = '';
+  for (var g = 0; g <= 4; g++) {
+    var gv = minVal + (range * g / 4);
+    var gy = y(gv);
+    gridHtml += '<line class="chart-grid" x1="' + pad.left + '" y1="' + gy.toFixed(1) + '" x2="' + (W - pad.right) + '" y2="' + gy.toFixed(1) + '"/>';
+    gridHtml += '<text class="chart-label" x="' + (pad.left - 8) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end">' + fmtShort(gv) + '</text>';
+  }
+
+  // Quarter labels
+  var labelsHtml = '';
+  quarters.forEach(function(q, i) {
+    labelsHtml += '<text class="chart-label" x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + q + '</text>';
+  });
+
+  // Dots
+  var dotsHtml = '';
+  quarters.forEach(function(q, i) {
+    dotsHtml += '<circle class="chart-dot" cx="' + x(i).toFixed(1) + '" cy="' + y(totals[i]).toFixed(1) + '" r="4" data-q="' + q + '" data-v="' + fmt(totals[i]) + '"/>';
+  });
+
+  container.innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' +
+      '<defs>' +
+        '<linearGradient id="chartGradientLine" x1="0" y1="0" x2="1" y2="0">' +
+          '<stop offset="0%" stop-color="#6366f1"/>' +
+          '<stop offset="100%" stop-color="#a78bfa"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="chartGradientArea" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="rgba(99,102,241,0.3)"/>' +
+          '<stop offset="100%" stop-color="rgba(99,102,241,0.02)"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      gridHtml +
+      '<path class="chart-area" d="' + areaPath + '"/>' +
+      '<path class="chart-line" d="' + linePath + '"/>' +
+      dotsHtml +
+      labelsHtml +
+    '</svg>' +
+    '<div class="chart-tooltip" id="chartTooltip"></div>';
+
+  // Tooltip events
+  container.querySelectorAll('.chart-dot').forEach(function(dot) {
+    dot.addEventListener('mouseenter', function(e) {
+      var tip = document.getElementById('chartTooltip');
+      tip.textContent = dot.dataset.q + ': ' + dot.dataset.v;
+      tip.style.opacity = '1';
+      var rect = container.getBoundingClientRect();
+      var cx = parseFloat(dot.getAttribute('cx'));
+      var cy = parseFloat(dot.getAttribute('cy'));
+      var svgRect = container.querySelector('svg').getBoundingClientRect();
+      var scaleX = svgRect.width / W;
+      var scaleY = svgRect.height / H;
+      tip.style.left = (cx * scaleX - 40) + 'px';
+      tip.style.top = (cy * scaleY - 40) + 'px';
+    });
+    dot.addEventListener('mouseleave', function() {
+      document.getElementById('chartTooltip').style.opacity = '0';
+    });
+  });
+}
+
+function renderAccountTable() {
+  const body = document.getElementById('accountBody');
+  const quarters = getSortedEnteredQuarters();
+
+  if (quarters.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" style="color:var(--text2)">No data yet.</td></tr>';
+    return;
+  }
+
+  const latest = quarters[quarters.length - 1];
+  const prev = quarters.length >= 2 ? quarters[quarters.length - 2] : null;
+  const latestData = data.quarters[latest];
+  const prevData = prev ? data.quarters[prev] : null;
+  const latestRates = (data.rates && data.rates[latest]) || {};
+
+  var html = '';
+  data.accounts.forEach(function(acc) {
+    const bal = latestData[acc.id] || 0;
+    const pBal = prevData ? (prevData[acc.id] || 0) : 0;
+    const interest = prevData ? bal - pBal : 0;
+    const yld = prevData && pBal > 0 ? (interest / pBal * 100) : 0;
+    const annualizedYld = yld * 4;
+    const claimedApy = latestRates[acc.id];
+    const cls = interest >= 0 ? 'positive' : 'negative';
+    const sign = interest >= 0 ? '+' : '';
+    html += '<tr>' +
+      '<td><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></td>' +
+      '<td class="num">' + fmt(bal) + '</td>' +
+      '<td class="num">' + (prevData ? fmt(pBal) : '\u2014') + '</td>' +
+      '<td class="num ' + cls + '">' + (prevData ? sign + fmt(interest) : '\u2014') + '</td>' +
+      '<td class="num ' + cls + '">' + (prevData ? sign + annualizedYld.toFixed(2) + '%' : '\u2014') + '</td>' +
+      '<td class="num">' + (claimedApy != null ? claimedApy.toFixed(2) + '%' : '\u2014') + '</td>' +
+    '</tr>';
+  });
+
+  const totalNow = data.accounts.reduce(function(s, a) { return s + (latestData[a.id] || 0); }, 0);
+  const totalPrev = prevData ? data.accounts.reduce(function(s, a) { return s + (prevData[a.id] || 0); }, 0) : 0;
+  const totalInt = prevData ? totalNow - totalPrev : 0;
+  const totalYld = prevData && totalPrev > 0 ? (totalInt / totalPrev * 100) : 0;
+  const totalAnnYld = totalYld * 4;
+  const tCls = totalInt >= 0 ? 'positive' : 'negative';
+  const tSign = totalInt >= 0 ? '+' : '';
+  html += '<tr style="font-weight:700;border-top:2px solid var(--table-border)">' +
+    '<td>Total</td>' +
+    '<td class="num">' + fmt(totalNow) + '</td>' +
+    '<td class="num">' + (prevData ? fmt(totalPrev) : '\u2014') + '</td>' +
+    '<td class="num ' + tCls + '">' + (prevData ? tSign + fmt(totalInt) : '\u2014') + '</td>' +
+    '<td class="num ' + tCls + '">' + (prevData ? tSign + totalAnnYld.toFixed(2) + '%' : '\u2014') + '</td>' +
+    '<td class="num">\u2014</td>' +
+  '</tr>';
+
+  body.innerHTML = html;
+}
+
+function renderHistory() {
+  const table = document.getElementById('historyTable');
+  const quarters = getSortedEnteredQuarters();
+
+  if (quarters.length === 0) {
+    table.innerHTML = '<tbody><tr><td style="color:var(--text2)">No history yet.</td></tr></tbody>';
+    return;
+  }
+
+  var html = '<thead><tr><th>Quarter</th>';
+  data.accounts.forEach(function(a) { html += '<th class="num">' + a.name + '</th>'; });
+  html += '<th class="num">Total</th><th class="num">Change</th></tr></thead><tbody>';
+
+  var prevTotal = null;
+  quarters.forEach(function(q) {
+    const qd = data.quarters[q];
+    const total = data.accounts.reduce(function(s, a) { return s + (qd[a.id] || 0); }, 0);
+    const change = prevTotal != null ? total - prevTotal : null;
+    const cls = change != null ? (change >= 0 ? 'positive' : 'negative') : '';
+    const sign = change != null ? (change >= 0 ? '+' : '') : '';
+    html += '<tr><td style="font-weight:600">' + q + '</td>';
+    data.accounts.forEach(function(a) { html += '<td class="num">' + fmt(qd[a.id] || 0) + '</td>'; });
+    html += '<td class="num" style="font-weight:700">' + fmt(total) + '</td>';
+    html += '<td class="num ' + cls + '">' + (change != null ? sign + fmt(change) : '\u2014') + '</td>';
+    html += '</tr>';
+    prevTotal = total;
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function renderAccountList() {
+  const container = document.getElementById('accountList');
+  var html = '';
+  data.accounts.forEach(function(acc) {
+    html += '<div class="account-row">' +
+      '<span style="flex:1;font-weight:600"><a class="inst-link" href="' + acc.url + '" target="_blank" rel="noopener">' + acc.name + '</a></span>' +
+      '<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + acc.url + '</span>' +
+      '<button class="btn btn-danger btn-sm" onclick="removeAccount(\'' + acc.id + '\')">Remove</button>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── Actions ─────────────────────────────────────────────────
+function saveBalances() {
+  const q = document.getElementById('qSelect').value;
+  const qData = {};
+  const rData = {};
+  let hasAny = false;
+  data.accounts.forEach(function(acc) {
+    const input = document.getElementById('input_' + acc.id);
+    const rateInput = document.getElementById('rate_' + acc.id);
+    if (input && input.value !== '') {
+      qData[acc.id] = parseFloat(input.value);
+      hasAny = true;
+    }
+    if (rateInput && rateInput.value !== '') {
+      rData[acc.id] = parseFloat(rateInput.value);
+    }
+  });
+  if (!hasAny) { alert('Please enter at least one balance.'); return; }
+  data.quarters[q] = qData;
+  if (!data.rates) data.rates = {};
+  data.rates[q] = rData;
+  saveData(data);
+  render();
+
+  // Flash animation on summary cards
+  document.querySelectorAll('.summary-card').forEach(function(card) {
+    card.classList.remove('save-flash');
+    void card.offsetWidth;
+    card.classList.add('save-flash');
+  });
+}
+
+function deleteQuarter() {
+  const q = document.getElementById('qSelect').value;
+  if (!data.quarters[q]) { alert('No data for ' + q); return; }
+  if (!confirm('Delete all balance data for ' + q + '?')) return;
+  delete data.quarters[q];
+  if (data.rates) delete data.rates[q];
+  saveData(data);
+  render();
+}
+
+function addAccount() {
+  const nameInput = document.getElementById('newName');
+  const urlInput = document.getElementById('newUrl');
+  const name = nameInput.value.trim();
+  const url = urlInput.value.trim();
+  if (!name) { alert('Please enter an institution name.'); return; }
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+  data.accounts.push({ id: id, name: name, url: url || '#' });
+  saveData(data);
+  nameInput.value = '';
+  urlInput.value = '';
+  render();
+}
+
+function removeAccount(id) {
+  const acc = data.accounts.find(function(a) { return a.id === id; });
+  if (!confirm('Remove ' + acc.name + '? Historical data for this account will remain but not be displayed.')) return;
+  data.accounts = data.accounts.filter(function(a) { return a.id !== id; });
+  saveData(data);
+  render();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'family_money_tracker_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.accounts || !imported.quarters) throw new Error('Invalid format');
+      if (!imported.rates) imported.rates = {};
+      data = imported;
+      saveData(data);
+      render();
+      alert('Data imported successfully.');
+    } catch (err) {
+      alert('Failed to import: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── Util ────────────────────────────────────────────────────
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtShort(n) {
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n / 1000).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+}
+
+// ── Quarter select change ───────────────────────────────────
+document.getElementById('qSelect').addEventListener('change', renderBalanceInputs);
+
+// ── Init ────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
